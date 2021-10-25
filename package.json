@@ -1,6 +1,6 @@
 {
   "name": "@gebruederheitz/htmodules",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Assemble an .htaccess file from a base file and an arbitrary number of modules.",
   "main": "dist/index.js",
   "module": "src/index.mjs",
