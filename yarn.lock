@@ -910,10 +910,10 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@gebruederheitz/plaintextlego@^1.2.0":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@gebruederheitz/plaintextlego/-/plaintextlego-1.2.2.tgz#f1a1b30169257328095e6600f34355d0f73d95c5"
-  integrity sha512-OVyLyZmmnPTX9qXE5SPT7e1IWwhawhGfZMtu7pQvkvQBa+2H/2BlSr+y3qSftfF0n6maOoMzekkLINlSLFym5A==
+"@gebruederheitz/plaintextlego@^1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@gebruederheitz/plaintextlego/-/plaintextlego-1.2.3.tgz#a31f6e1e6cd9eec4e535ef676676fedf6a2b02b5"
+  integrity sha512-O1aqX+Ca3ktHkPBBJTy6L4RRG2fCaQQeI8mySObWY8DZ2QeJdvCSs61iiRlHKxZ4LFWftUKi4xijAEk8A9jt+Q==
   dependencies:
     lodash-es "^4.17.21"
     mocha "^9.1.3"
