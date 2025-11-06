@@ -11,7 +11,7 @@ tasks:
       - npm run lint:prettier
 
   test:
-    deps: [install, lint]
+    deps: [install]
     cmds:
       - npx vitest run
 
