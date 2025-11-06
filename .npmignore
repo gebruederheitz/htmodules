@@ -1,9 +1,8 @@
-example/
-.eslintrc.json
+examples/
+eslint.config.mjs
 .prettierrc
-.rollup-config.js
-yarn-error.log
-.babelrc.json
-.browserslistrc
-.eslintignore
-.yarnrc.yml
+.idea/
+.task/
+.tool-versions
+Taskfile.yaml
+test/

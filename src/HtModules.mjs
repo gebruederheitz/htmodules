@@ -1,7 +1,8 @@
-import path from 'path';
-import { readdir } from 'fs/promises';
+import path from 'node:path';
+import { readdir } from 'node:fs/promises';
 import { PlainTextLego } from '@gebruederheitz/plaintextlego';
-import findUp from 'find-up';
+import { findUp } from 'find-up';
+import process from 'node:process';
 
 export class HtModules {
     constructor(baseFilePath = '') {
@@ -17,7 +18,8 @@ export class HtModules {
 
     async discover() {
         if (!this.baseFilePath) {
-            this.baseFilePath = await findUp('.htaccess');
+            this.baseFilePath =
+                (await findUp('.htaccess', { cwd: process.cwd() })) ?? '';
         }
         const baseDir = path.dirname(this.baseFilePath);
         const fileList = await readdir(baseDir);

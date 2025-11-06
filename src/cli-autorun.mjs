@@ -1,4 +1,5 @@
-const { HtModules } = require('../dist/index.js');
+import { HtModules } from './HtModules.mjs';
+import process from 'node:process';
 
 let baseFilePath = '';
 const args = process.argv.splice(2);
