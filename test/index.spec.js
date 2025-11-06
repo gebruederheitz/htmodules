@@ -1,5 +1,5 @@
 import './_mocks/fs.js';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import path from 'node:path';
 import { fs, vol } from 'memfs';
 import process from 'node:process';
@@ -10,6 +10,10 @@ import { HtModules } from '../src/index.mjs';
 beforeEach(() => {
     // reset the state of in-memory fs
     vol.reset();
+});
+
+afterEach(() => {
+    vi.resetAllMocks();
 });
 
 describe('The htmodules library', () => {

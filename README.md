@@ -50,13 +50,11 @@ You can use this from the node scripts in your package.json:
 ```
 
 
-## Code Usage
+## API / Code Usage
 
 ```js
 // ES module import
 import { HtModules } from '@gebruederheitz/htmodules';
-// or, for CJS use (e.g. older node)
-const { HtModules } = require('@gebruederheitz/htmodules');
 
 // Automatically find the nearest .htaccess upwards and modules in the same
 // directory and apply the modules to the base file
