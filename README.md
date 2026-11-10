@@ -23,6 +23,10 @@ package](https://github.com/gebruederheitz/plaintextlego#readme).
 npm install @gebruederheitz/htmodules
 ```
 
+htmodules supports every Node.js release line that is currently in LTS (active
+or maintenance), and its test suite runs on each of them. The exact minimum
+version is the `engines` field in `package.json`.
+
 
 ## CLI Usage
 
