@@ -4,3 +4,4 @@ example/*
 .idea/
 .task/
 test/fixtures/cli/.htaccess
+CLAUDE.local.md

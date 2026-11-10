@@ -6,3 +6,7 @@ eslint.config.mjs
 .tool-versions
 Taskfile.yaml
 test/
+CLAUDE.md
+.release-it.yaml
+vitest.config.mjs
+CLAUDE.local.md
