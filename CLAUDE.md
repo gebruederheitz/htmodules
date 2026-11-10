@@ -13,13 +13,16 @@ Pure ESM, no build step, no transpilation: `bin/cli` imports `src/cli-autorun.mj
 The Taskfile (go-task) is the entry point. Each task first runs `asdf install` and `npm i`, the latter only when `package.json` or `package-lock.json` changed.
 
 ```bash
-task test        # npx vitest run
-task dev         # vitest in watch mode
-task lint        # eslint + prettier --check on src/ only
-task release     # release-it; see below
+task test                # vitest run on every supported Node LTS line, one after another
+task test:node NODE=24   # vitest run on one major line only
+task dev                 # vitest in watch mode, on the .tool-versions Node
+task lint                # eslint + prettier --check on src/ only
+task release             # release-it; see below
 ```
 
-Run a single test file or test by name:
+`task test` loops over a `for: matrix:` of Node major versions in `Taskfile.yaml`. For each major, it runs the newest Node of that line that asdf has installed, selected through `ASDF_NODEJS_VERSION`; if none is installed, it installs `latest:<major>` first. When the supported range changes, update that matrix and `engines` in `package.json` together. The runs are sequential because the CLI tests write into the shared fixture directory.
+
+Run a single test file or test by name, on the `.tool-versions` Node:
 
 ```bash
 npx vitest run test/cli.spec.js

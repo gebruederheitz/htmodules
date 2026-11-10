@@ -11,9 +11,38 @@ tasks:
       - npm run lint:prettier
 
   test:
+    desc: Run the test suite on every supported Node.js LTS line
     deps: [install]
     cmds:
-      - npx vitest run
+      # Sequential on purpose: the CLI tests write to the shared fixture
+      # directory, so parallel runs would collide.
+      - for:
+          matrix:
+            NODE: ['22', '24', '26']
+        task: test:node
+        vars:
+          NODE: '{{.ITEM.NODE}}'
+
+  test:node:
+    desc: Run the test suite on the newest installed Node.js of one major line (NODE=24)
+    label: 'test:node:{{.NODE}}'
+    silent: true
+    requires:
+      vars: [NODE]
+    deps: [install]
+    cmds:
+      - |
+        latest_installed() {
+          asdf list nodejs {{.NODE}} 2>/dev/null | tr -d ' *' | grep -E '^[0-9]' | sort -V | tail -n 1
+        }
+        version=$(latest_installed)
+        if [ -z "$version" ]; then
+          asdf install nodejs latest:{{.NODE}}
+          version=$(latest_installed)
+        fi
+        export ASDF_NODEJS_VERSION=$version
+        echo "Running tests on Node.js $(node --version)"
+        npx vitest run
 
   release:
     deps: [install]
