@@ -1,8 +1,9 @@
 import path from 'node:path';
 import { readdir } from 'node:fs/promises';
 import { PlainTextLego } from '@gebruederheitz/plaintextlego';
-import { findUp } from 'find-up';
 import process from 'node:process';
+
+import { findNearestFile } from './find-nearest-file.mjs';
 
 export class HtModules {
     constructor(baseFilePath = '') {
@@ -19,7 +20,7 @@ export class HtModules {
     async discover() {
         if (!this.baseFilePath) {
             this.baseFilePath =
-                (await findUp('.htaccess', { cwd: process.cwd() })) ?? '';
+                (await findNearestFile('.htaccess', process.cwd())) ?? '';
         }
         const baseDir = path.dirname(this.baseFilePath);
         const fileList = await readdir(baseDir);
