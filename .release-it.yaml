@@ -13,5 +13,5 @@ hooks:
         - "task lint test"
     after:bump:
         - npm i
-        - git add ./package-lock.json
+        - git add ./npm-shrinkwrap.json
     after:release: "echo Successfully released ${name} v${version} to ${repo.repository}."
