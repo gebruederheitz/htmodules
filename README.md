@@ -25,6 +25,16 @@ changed or removed. If there are no module files at all but the base file
 still holds `htmodules:` blocks, htmodules refuses to remove them all and
 fails, unless you pass `--force` (CLI) or `{ force: true }` (API).
 
+### Block prefix
+
+`htmodules` is the default prefix ("owner"). With `--owner <name>` (CLI) or
+`{ owner: '<name>' }` (API), a run writes, updates and removes only the
+`<name>:` blocks and leaves all others alone, including those of other
+owners. This lets independent sets of module files maintain their own blocks
+in the same target. The owner separates blocks, not module files: each run
+applies every module file next to the base file, so put only one set there
+per run. The name must not contain whitespace or `:`.
+
 Upgrading from version 2? See [UPGRADING.md](UPGRADING.md).
 
 An [example of how the files are combined](https://github.com/gebruederheitz/plaintextlego#basic-usage-replace-source-file)
@@ -60,6 +70,9 @@ $> npx htmodules ./apache-dir.conf
 
 # Remove all htmodules blocks, even though there are no module files
 $> npx htmodules --force
+
+# Use another block prefix: # BEGIN deploy:<name>
+$> npx htmodules --owner deploy
 
 # or
 
@@ -98,6 +111,9 @@ await new HtModules(path.resolve('./apache-dir.conf')).run();
 
 // Remove all htmodules blocks, even though there are no module files
 await new HtModules('', { force: true }).run();
+
+// Use another block prefix: # BEGIN deploy:<name>
+await new HtModules('', { owner: 'deploy' }).run();
 ```
 
 `run()` resolves with the names of the removed blocks (without the
