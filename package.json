@@ -35,7 +35,7 @@
         "lint:prettier": "prettier -c --config ./.prettierrc src/"
     },
     "dependencies": {
-        "@gebruederheitz/plaintextlego": "^2.0.0"
+        "@gebruederheitz/plaintextlego": "^3.0.0"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",

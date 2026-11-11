@@ -9,7 +9,7 @@
             "version": "2.0.0",
             "license": "GPL-3.0-only",
             "dependencies": {
-                "@gebruederheitz/plaintextlego": "^2.0.0"
+                "@gebruederheitz/plaintextlego": "^3.0.0"
             },
             "bin": {
                 "htmodules": "bin/cli"
@@ -194,13 +194,10 @@
             }
         },
         "node_modules/@gebruederheitz/plaintextlego": {
-            "version": "2.0.0",
-            "resolved": "https://registry.npmjs.org/@gebruederheitz/plaintextlego/-/plaintextlego-2.0.0.tgz",
-            "integrity": "sha512-o3QWClrcUjJgbzhcJb6MyhgAEg1I5mKll5f8zKZ7jFJgcZ0zPChyMySyeSLs8myDpCHdCt3buFQ1wD+sZQ1e4A==",
+            "version": "3.0.0",
+            "resolved": "https://registry.npmjs.org/@gebruederheitz/plaintextlego/-/plaintextlego-3.0.0.tgz",
+            "integrity": "sha512-q4vFla9RmiTZsGoQmBGr4fWXHBG22t9u9F+Q5g9vfd2wj+AnEliNoSzmUprSbMHwwAuuoUz8iNqcywkjwj1BPw==",
             "license": "GPL-3.0-only",
-            "dependencies": {
-                "lodash-es": "^4.18.1"
-            },
             "engines": {
                 "node": ">=22"
             }
@@ -3471,12 +3468,6 @@
                 "type": "opencollective",
                 "url": "https://opencollective.com/parcel"
             }
-        },
-        "node_modules/lodash-es": {
-            "version": "4.18.1",
-            "resolved": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.18.1.tgz",
-            "integrity": "sha512-J8xewKD/Gk22OZbhpOVSwcs60zhd95ESDwezOFuA3/099925PdHJ7OFHNTGtajL3AlZkykD32HykiMo+BIBI8A==",
-            "license": "MIT"
         },
         "node_modules/lodash.capitalize": {
             "version": "4.2.1",

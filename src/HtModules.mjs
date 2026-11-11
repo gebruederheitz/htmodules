@@ -5,24 +5,42 @@ import process from 'node:process';
 
 import { findNearestFile } from './find-nearest-file.mjs';
 
+/**
+ * The prefix of every block htmodules writes: `# BEGIN htmodules:<name>`.
+ * Blocks without it are never changed or removed.
+ */
+export const OWNER = 'htmodules';
+
+/**
+ * @typedef {object} HtModulesOptions
+ * @property {boolean} [force] Remove all htmodules blocks even if there is
+ *           no module file at all. Without it, such a run is rejected.
+ */
+
 export class HtModules {
     /**
      * @param {string} baseFilePath The file to write the modules into. Empty:
      *        the nearest `.htaccess` from the working directory upwards.
+     * @param {HtModulesOptions} options
      */
-    constructor(baseFilePath = '') {
+    constructor(baseFilePath = '', { force = false } = {}) {
         this.baseFilePath = baseFilePath;
+        this.force = force;
     }
 
     /**
-     * Applies the module files next to the base file to the base file.
+     * Applies the module files next to the base file to the base file, and
+     * removes the blocks whose module file is gone. Each removed block is
+     * logged to stdout.
      *
-     * @returns {Promise<void>}
+     * @returns {Promise<string[]>} The names of the removed blocks, without the owner prefix.
      */
     async run() {
         const moduleFilePaths = await this.discover();
         const modules = this.createModulesObject(moduleFilePaths);
-        await this.buildHtaccess(modules);
+        const removed = await this.buildHtaccess(modules);
+        removed.forEach((name) => this.logRemoved(name));
+        return removed;
     }
 
     async discover() {
@@ -67,6 +85,15 @@ export class HtModules {
 
     async buildHtaccess(modules) {
         const ptl = new PlainTextLego(this.baseFilePath);
-        await ptl.run(modules);
+        return await ptl.run(modules, null, {
+            owner: OWNER,
+            force: this.force,
+        });
+    }
+
+    logRemoved(name) {
+        console.log(
+            `Removed block "${OWNER}:${name}" from ${this.baseFilePath}: there is no ${name}.htaccess next to it.`
+        );
     }
 }

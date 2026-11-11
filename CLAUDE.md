@@ -37,19 +37,21 @@ Lint and Prettier only cover `src/`, not `test/`.
 
 1. **Base file:** the constructor argument, or else the nearest regular file named `.htaccess`, searching upwards from `process.cwd()` to the filesystem root (`src/find-nearest-file.mjs`). Directories named `.htaccess` are skipped.
 2. **Modules:** every file in the base file's directory whose `path.extname` is `.htaccess`. The base `.htaccess` itself has no extension in Node's terms (it is a dotfile), so it is never picked up as a module. A custom base such as `apache.conf` is never picked up either.
-3. **Block name** = `path.parse(file).name`, i.e. the filename without `.htaccess`. A leading dot is kept: `.base.htaccess` maps to `# BEGIN .base`, not `# BEGIN base`.
-4. `PlainTextLego(base).run(modules)` rewrites the base file in place. It replaces an existing `# BEGIN x … # END x` block, appends the block at the end of the file if it does not exist yet, and removes the block if the module file is empty.
+3. **Block name** = `htmodules:` + `path.parse(file).name`, i.e. the filename without `.htaccess`. A leading dot is kept: `.base.htaccess` maps to `# BEGIN htmodules:.base`. The prefix is the plaintextlego `owner` (`OWNER` in `src/HtModules.mjs`).
+4. `PlainTextLego(base).run(modules, null, { owner, force })` rewrites the base file in place. It replaces an owned block that has a module, appends a module without a block at the end of the file, and removes an owned block whose module is gone. Blocks without the prefix are foreign and never touched. `run()` logs each removed block to stdout and resolves with their names.
 
 Behaviours to keep in mind:
 
-- **Module files cannot be withdrawn just by deleting them.** Deleting a module file leaves its block in the target untouched. Ship an empty module file once to remove the block.
+- **Deleting a module file removes its block** on the next run. An empty module file writes an empty block.
+- **No module files at all** while the target holds `htmodules:` blocks: plaintextlego rejects with `PTL_NO_MODULES` and writes nothing, so a broken deployment cannot wipe every block. `--force` / `{ force: true }` removes them all. The CLI adds a hint to `--force` to the error.
+- plaintextlego also rejects, before writing, a module with a line starting with `# BEGIN ` or `# END ` (`PTL_MODULE_INVALID`) and an unreadable module (`PTL_MODULE_UNREADABLE`).
 - **The constructor only stores its arguments.** `await new HtModules(base).run()` does the work and rejects on failure, for instance with `code: 'HTMODULES_NO_BASE_FILE'` when no `.htaccess` is found.
 - **CLI:** `src/cli.mjs` parses the arguments with Node's `util.parseArgs` in strict mode (decision on gebruederheitz/htmodules#1): at most one positional base path, long options only, unknown options rejected, `--` ends the options. `main()` returns the exit code and writes errors to stderr as `htmodules: <message>`, without a stack trace, plus the usage line for argument errors. `src/cli-autorun.mjs` sets `process.exitCode` from it.
 
 ## Tests
 
 - `test/index.spec.js` tests the API and the CLI's `main()` against an in-memory filesystem. `test/_mocks/fs.js` mocks `fs`, `fs/promises`, `node:fs` and `node:fs/promises` with `memfs`. For those mocks to reach `plaintextlego` inside `node_modules`, `vitest.config.mjs` inlines all dependencies (`server.deps.inline: true`). Do not remove that setting.
-- `test/cli.spec.js` runs the real `bin/cli` with `execa` on the real filesystem. It copies `test/fixtures/cli/fixture` to `test/fixtures/cli/.htaccess` (gitignored), or to `nested/apache.conf` for a custom base path, and deletes the copy afterwards. It also checks the exit code and stderr of a failing run. `fixtures/cli/removal.htaccess` is intentionally empty and covers block removal.
+- `test/cli.spec.js` runs the real `bin/cli` with `execa` on the real filesystem. It copies `test/fixtures/cli/fixture` to `test/fixtures/cli/.htaccess` (gitignored), or to `nested/apache.conf` for a custom base path, and deletes the copy afterwards. It also checks the exit code and stderr of a failing run. The fixture's `htmodules:removal` block has no module file, which covers removal and its log line.
 - `test/package.spec.js` imports the package by its own name in a separate Node process (package self-reference), so the `exports` field is resolved by Node rather than by vite.
 - `test/find-nearest-file.spec.js` covers the upward lookup of the base file, also against `memfs`.
 
@@ -68,3 +70,5 @@ The lockfile is `npm-shrinkwrap.json`, not `package-lock.json`. npm publishes it
 The package is used through the CLI only. The typical call is `npx -y @gebruederheitz/htmodules@<major>` in a CI deployment job, often with deployment credentials loaded; some projects call `htmodules <base path>` from an npm script instead. Notes on specific consumer projects belong in `CLAUDE.local.md` (gitignored and npmignored), never in this file: the repository is public.
 
 The CLI arguments, the discovery rules and the block-name mapping above are what consumers rely on. Treat changes to any of them as breaking.
+
+Upgrading a consumer from 2.x to 3.0 needs a one-time rename of the existing blocks in every target before the first run (`# BEGIN name` → `# BEGIN htmodules:name`, same for `# END`); `UPGRADING.md` has the steps.
