@@ -14,9 +14,9 @@ describe('The htmodules CLI script', () => {
         'fixtures/cli/nested/apache.conf'
     );
 
-    afterEach(() => {
-        rm(filePath, { force: true });
-        rm(nestedFilePath, { force: true });
+    afterEach(async () => {
+        await rm(filePath, { force: true });
+        await rm(nestedFilePath, { force: true });
     });
 
     it('processes module files into a common template file', async () => {
@@ -51,5 +51,17 @@ describe('The htmodules CLI script', () => {
         expect(fileContent).not.to.contain('binary realm');
         expect(fileContent).not.to.contain('# BEGIN removal');
         expect(fileContent).not.to.contain('be here forever');
+    });
+
+    it('exits with 1 and a message on stderr when it fails', async () => {
+        const result = await execa(
+            p('../bin/cli'),
+            [p('fixtures/cli/nested/missing.conf')],
+            { cwd: p('.'), reject: false }
+        );
+
+        expect(result.exitCode).toBe(1);
+        expect(result.stderr).toMatch(/^htmodules: /);
+        expect(result.stderr).not.toContain('    at ');
     });
 });

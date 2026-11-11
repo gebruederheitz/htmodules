@@ -44,8 +44,13 @@ $> npx htmodules ./apache-dir.conf
 
 # or
 
-$> ./node_modules/bin/htmodules
+$> ./node_modules/.bin/htmodules
 ```
+
+htmodules exits with a non-zero code and writes the reason to stderr when it
+cannot do its job, for instance when it finds no `.htaccess`, or when it gets
+an unknown option or more than one base file. Use `--` before a base file
+whose name starts with a dash.
 
 You can use this from the node scripts in your package.json:
 
@@ -67,8 +72,10 @@ import { HtModules } from '@gebruederheitz/htmodules';
 
 // Automatically find the nearest .htaccess upwards and modules in the same
 // directory and apply the modules to the base file
-new HtModules();
+await new HtModules().run();
 
 // or provide a specific base file to work on
-new HtModules(path.resolve('./apache-dir.conf'));
+await new HtModules(path.resolve('./apache-dir.conf')).run();
 ```
+
+`run()` rejects if anything goes wrong; the base file is then left as it was.
