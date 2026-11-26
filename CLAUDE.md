@@ -33,7 +33,7 @@ Lint and Prettier only cover `src/`, not `test/`.
 
 ## How it works
 
-`src/HtModules.mjs` contains all the logic.
+`src/HtModules.mjs` contains the logic; `src/cli.mjs` turns the command line into a run.
 
 1. **Base file:** the constructor argument, or else the nearest regular file named `.htaccess`, searching upwards from `process.cwd()` to the filesystem root (`src/find-nearest-file.mjs`). Directories named `.htaccess` are skipped.
 2. **Modules:** every file in the base file's directory whose `path.extname` is `.htaccess`. The base `.htaccess` itself has no extension in Node's terms (it is a dotfile), so it is never picked up as a module. A custom base such as `apache.conf` is never picked up either.
@@ -43,13 +43,13 @@ Lint and Prettier only cover `src/`, not `test/`.
 Behaviours to keep in mind:
 
 - **Module files cannot be withdrawn just by deleting them.** Deleting a module file leaves its block in the target untouched. Ship an empty module file once to remove the block.
-- **The constructor runs everything and does not return a promise.** `new HtModules()` starts `exec()` and moves on, so callers cannot await completion. The tests work around this by waiting a tick (`setTimeout(…, 1)`). Changing this changes the public API.
-- `src/cli-autorun.mjs` reads the optional base path from `process.argv[2]`.
+- **The constructor only stores its arguments.** `await new HtModules(base).run()` does the work and rejects on failure, for instance with `code: 'HTMODULES_NO_BASE_FILE'` when no `.htaccess` is found.
+- **CLI:** `src/cli.mjs` parses the arguments with Node's `util.parseArgs` in strict mode (decision on gebruederheitz/htmodules#1): at most one positional base path, long options only, unknown options rejected, `--` ends the options. `main()` returns the exit code and writes errors to stderr as `htmodules: <message>`, without a stack trace, plus the usage line for argument errors. `src/cli-autorun.mjs` sets `process.exitCode` from it.
 
 ## Tests
 
-- `test/index.spec.js` tests the API against an in-memory filesystem. `test/_mocks/fs.js` mocks `fs`, `fs/promises`, `node:fs` and `node:fs/promises` with `memfs`. For those mocks to reach `plaintextlego` inside `node_modules`, `vitest.config.mjs` inlines all dependencies (`server.deps.inline: true`). Do not remove that setting.
-- `test/cli.spec.js` runs the real `bin/cli` with `execa` on the real filesystem. It copies `test/fixtures/cli/fixture` to `test/fixtures/cli/.htaccess` (gitignored), or to `nested/apache.conf` for a custom base path, and deletes the copy afterwards. `fixtures/cli/removal.htaccess` is intentionally empty and covers block removal.
+- `test/index.spec.js` tests the API and the CLI's `main()` against an in-memory filesystem. `test/_mocks/fs.js` mocks `fs`, `fs/promises`, `node:fs` and `node:fs/promises` with `memfs`. For those mocks to reach `plaintextlego` inside `node_modules`, `vitest.config.mjs` inlines all dependencies (`server.deps.inline: true`). Do not remove that setting.
+- `test/cli.spec.js` runs the real `bin/cli` with `execa` on the real filesystem. It copies `test/fixtures/cli/fixture` to `test/fixtures/cli/.htaccess` (gitignored), or to `nested/apache.conf` for a custom base path, and deletes the copy afterwards. It also checks the exit code and stderr of a failing run. `fixtures/cli/removal.htaccess` is intentionally empty and covers block removal.
 - `test/package.spec.js` imports the package by its own name in a separate Node process (package self-reference), so the `exports` field is resolved by Node rather than by vite.
 - `test/find-nearest-file.spec.js` covers the upward lookup of the base file, also against `memfs`.
 
