@@ -1,12 +1,12 @@
 {
     "name": "@gebruederheitz/htmodules",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "lockfileVersion": 3,
     "requires": true,
     "packages": {
         "": {
             "name": "@gebruederheitz/htmodules",
-            "version": "2.0.0",
+            "version": "3.0.0",
             "license": "GPL-3.0-only",
             "dependencies": {
                 "@gebruederheitz/plaintextlego": "^3.0.0"
