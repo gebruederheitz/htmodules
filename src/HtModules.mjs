@@ -16,8 +16,10 @@ export const OWNER = 'htmodules';
  * @typedef {object} HtModulesOptions
  * @property {string} [owner] The block name prefix, default `htmodules`:
  *           `# BEGIN <owner>:<name>`. No whitespace and no `:`.
- * @property {boolean} [force] Remove all htmodules blocks even if there is
- *           no module file at all. Without it, such a run is rejected.
+ * @property {boolean} [force] Remove all of the owner's blocks even if there
+ *           is no module file at all. Without it, such a run is rejected.
+ * @property {boolean} [silent] Do not log the removed blocks. Errors are
+ *           still thrown.
  */
 
 export class HtModules {
@@ -26,16 +28,20 @@ export class HtModules {
      *        the nearest `.htaccess` from the working directory upwards.
      * @param {HtModulesOptions} options
      */
-    constructor(baseFilePath = '', { owner = OWNER, force = false } = {}) {
+    constructor(
+        baseFilePath = '',
+        { owner = OWNER, force = false, silent = false } = {}
+    ) {
         this.baseFilePath = baseFilePath;
         this.owner = owner;
         this.force = force;
+        this.silent = silent;
     }
 
     /**
      * Applies the module files next to the base file to the base file, and
      * removes the blocks whose module file is gone. Each removed block is
-     * logged to stdout.
+     * logged to stdout, unless `silent` is set.
      *
      * @returns {Promise<string[]>} The names of the removed blocks, without the owner prefix.
      */
@@ -43,7 +49,9 @@ export class HtModules {
         const moduleFilePaths = await this.discover();
         const modules = this.createModulesObject(moduleFilePaths);
         const removed = await this.buildHtaccess(modules);
-        removed.forEach((name) => this.logRemoved(name));
+        if (!this.silent) {
+            removed.forEach((name) => this.logRemoved(name));
+        }
         return removed;
     }
 

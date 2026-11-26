@@ -82,6 +82,22 @@ describe('The htmodules library', () => {
         );
     });
 
+    it('does not log the removed blocks when silent', async () => {
+        const stdout = vi.spyOn(console, 'log').mockImplementation(() => {});
+        vol.fromJSON(
+            {
+                './.htaccess': '# BEGIN htmodules:old\ngone\n# END htmodules:old\n',
+                './new.htaccess': 'fresh\n',
+            },
+            process.cwd()
+        );
+
+        expect(await new HtModules('', { silent: true }).run()).toEqual([
+            'old',
+        ]);
+        expect(stdout).not.toHaveBeenCalled();
+    });
+
     it('refuses to remove all its blocks when there are no module files', async () => {
         const filePath = path.join(process.cwd(), '.htaccess');
         const base = '# BEGIN htmodules:old\nkept\n# END htmodules:old\n';
@@ -237,6 +253,30 @@ describe('The htmodules CLI', () => {
         expect(await main(['--owner'])).toBe(1);
         expect(stderr).toHaveBeenCalledWith(
             expect.stringMatching(/^Usage: htmodules/)
+        );
+    });
+
+    it.each([
+        [[], 1],
+        [['--silent'], 0],
+    ])('logs the removed blocks with %j %i times', async (args, times) => {
+        const stdout = vi.spyOn(console, 'log').mockImplementation(() => {});
+        vol.fromJSON(
+            {
+                './.htaccess': '# BEGIN htmodules:old\ngone\n# END htmodules:old\n',
+                './new.htaccess': 'fresh\n',
+            },
+            process.cwd()
+        );
+
+        expect(await main(args)).toBe(0);
+        expect(stdout).toHaveBeenCalledTimes(times);
+    });
+
+    it('still reports errors with --silent', async () => {
+        expect(await main(['--silent'])).toBe(1);
+        expect(stderr).toHaveBeenCalledWith(
+            expect.stringMatching(/^htmodules: No \.htaccess found in /)
         );
     });
 

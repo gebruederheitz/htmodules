@@ -4,11 +4,11 @@ import { parseArgs } from 'node:util';
 import { HtModules, OWNER } from './HtModules.mjs';
 
 export const USAGE =
-    'Usage: htmodules [--owner <name>] [--force] [--] [base file]';
+    'Usage: htmodules [--owner <name>] [--force] [--silent] [--] [base file]';
 
 /**
  * @param {string[]} args The command line arguments, without node and the script.
- * @returns {{baseFilePath: string, options: {owner: string, force: boolean}}}
+ * @returns {{baseFilePath: string, options: {owner: string, force: boolean, silent: boolean}}}
  */
 export function parseCliArgs(args) {
     let parsed;
@@ -20,6 +20,7 @@ export function parseCliArgs(args) {
             options: {
                 owner: { type: 'string', default: OWNER },
                 force: { type: 'boolean', default: false },
+                silent: { type: 'boolean', default: false },
             },
         });
     } catch (cause) {
@@ -35,7 +36,11 @@ export function parseCliArgs(args) {
 
     return {
         baseFilePath: positionals[0] ?? '',
-        options: { owner: values.owner, force: values.force },
+        options: {
+            owner: values.owner,
+            force: values.force,
+            silent: values.silent,
+        },
     };
 }
 

@@ -18,7 +18,7 @@ On every run:
 - a module file without a block is appended to the end of the base file as a
   new block;
 - a block whose module file is gone is removed, and htmodules logs the removal
-  to stdout. To withdraw a module, delete its file.
+  to stdout (unless `--silent`). To withdraw a module, delete its file.
 
 Blocks without the `htmodules:` prefix, such as `# BEGIN WordPress`, are never
 changed or removed. If there are no module files at all but the base file
@@ -74,6 +74,9 @@ $> npx htmodules --force
 # Use another block prefix: # BEGIN deploy:<name>
 $> npx htmodules --owner deploy
 
+# Do not log the removed blocks (errors are still reported)
+$> npx htmodules --silent
+
 # or
 
 $> ./node_modules/.bin/htmodules
@@ -114,6 +117,9 @@ await new HtModules('', { force: true }).run();
 
 // Use another block prefix: # BEGIN deploy:<name>
 await new HtModules('', { owner: 'deploy' }).run();
+
+// Do not log the removed blocks
+await new HtModules('', { silent: true }).run();
 ```
 
 `run()` resolves with the names of the removed blocks (without the

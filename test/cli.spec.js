@@ -55,6 +55,19 @@ describe('The htmodules CLI script', () => {
         expect(fileContent).not.to.contain('be here forever');
     });
 
+    it('keeps stdout empty with --silent', async () => {
+        await cp(p('fixtures/cli/fixture'), filePath);
+
+        const { stdout } = await execa(p('../bin/cli'), ['--silent'], {
+            cwd: p('fixtures/cli'),
+        });
+
+        expect(stdout).toBe('');
+        expect(await readFile(filePath, 'utf8')).not.to.contain(
+            '# BEGIN htmodules:removal'
+        );
+    });
+
     it('exits with 1 and a message on stderr when it fails', async () => {
         const result = await execa(
             p('../bin/cli'),
