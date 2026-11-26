@@ -23,6 +23,11 @@ package](https://github.com/gebruederheitz/plaintextlego#readme).
 npm install @gebruederheitz/htmodules
 ```
 
+The package ships an `npm-shrinkwrap.json`, so its dependencies are installed
+at the exact versions it was released with. In CI, pin an exact version of
+htmodules too (`npx -y @gebruederheitz/htmodules@<version>`): together, they
+fix every package the job runs.
+
 htmodules supports every Node.js release line that is currently in LTS (active
 or maintenance), and its test suite runs on each of them. The exact minimum
 version is the `engines` field in `package.json`.

@@ -58,10 +58,10 @@ tasks:
     aliases: [install, install-dependencies]
     run: when_changed
     sources:
-      - package-json
-      - package-lock.json
+      - package.json
+      - npm-shrinkwrap.json
     generates:
-      - package-lock.json
+      - npm-shrinkwrap.json
       - node_modules/**/*
     deps:
       - install-language

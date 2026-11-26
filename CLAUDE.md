@@ -10,7 +10,7 @@ Pure ESM, no build step, no transpilation: `bin/cli` imports `src/cli-autorun.mj
 
 ## Commands
 
-The Taskfile (go-task) is the entry point. Each task first runs `asdf install` and `npm i`, the latter only when `package.json` or `package-lock.json` changed.
+The Taskfile (go-task) is the entry point. Each task first runs `asdf install` and `npm i`, the latter only when `package.json` or `npm-shrinkwrap.json` changed.
 
 ```bash
 task test                # vitest run on every supported Node LTS line, one after another
@@ -35,7 +35,7 @@ Lint and Prettier only cover `src/`, not `test/`.
 
 `src/HtModules.mjs` contains all the logic.
 
-1. **Base file:** the constructor argument, or else the nearest `.htaccess` found by `find-up`, searching upwards from `process.cwd()`.
+1. **Base file:** the constructor argument, or else the nearest regular file named `.htaccess`, searching upwards from `process.cwd()` to the filesystem root (`src/find-nearest-file.mjs`). Directories named `.htaccess` are skipped.
 2. **Modules:** every file in the base file's directory whose `path.extname` is `.htaccess`. The base `.htaccess` itself has no extension in Node's terms (it is a dotfile), so it is never picked up as a module. A custom base such as `apache.conf` is never picked up either.
 3. **Block name** = `path.parse(file).name`, i.e. the filename without `.htaccess`. A leading dot is kept: `.base.htaccess` maps to `# BEGIN .base`, not `# BEGIN base`.
 4. `PlainTextLego(base).run(modules)` rewrites the base file in place. It replaces an existing `# BEGIN x … # END x` block, appends the block at the end of the file if it does not exist yet, and removes the block if the module file is empty.
@@ -48,13 +48,20 @@ Behaviours to keep in mind:
 
 ## Tests
 
-- `test/index.spec.js` tests the API against an in-memory filesystem. `test/_mocks/fs.js` mocks `fs`, `fs/promises`, `node:fs` and `node:fs/promises` with `memfs`. For those mocks to reach `find-up` and `plaintextlego` inside `node_modules`, `vitest.config.mjs` inlines all dependencies (`server.deps.inline: true`). Do not remove that setting.
+- `test/index.spec.js` tests the API against an in-memory filesystem. `test/_mocks/fs.js` mocks `fs`, `fs/promises`, `node:fs` and `node:fs/promises` with `memfs`. For those mocks to reach `plaintextlego` inside `node_modules`, `vitest.config.mjs` inlines all dependencies (`server.deps.inline: true`). Do not remove that setting.
 - `test/cli.spec.js` runs the real `bin/cli` with `execa` on the real filesystem. It copies `test/fixtures/cli/fixture` to `test/fixtures/cli/.htaccess` (gitignored), or to `nested/apache.conf` for a custom base path, and deletes the copy afterwards. `fixtures/cli/removal.htaccess` is intentionally empty and covers block removal.
 - `test/package.spec.js` imports the package by its own name in a separate Node process (package self-reference), so the `exports` field is resolved by Node rather than by vite.
+- `test/find-nearest-file.spec.js` covers the upward lookup of the base file, also against `memfs`.
+
+## Dependencies
+
+`@gebruederheitz/plaintextlego` is the only runtime dependency, and it should stay that way. htmodules usually runs through `npx` in deployment jobs that have credentials loaded, so every package in its tree runs with those credentials. Prefer a few lines of code or a Node built-in over a new package.
+
+The lockfile is `npm-shrinkwrap.json`, not `package-lock.json`. npm publishes it with the package and honours it when htmodules is installed as a dependency or through `npx`, so consumers get exactly the locked tree. A plaintextlego fix therefore reaches consumers only with an htmodules release that updates the shrinkwrap; `^` in `package.json` only matters for the next `npm i` here.
 
 ## Releasing
 
-`release-it` (`.release-it.yaml`) only runs from `main`. It runs `task lint test` first, bumps the version, refreshes and commits `package-lock.json`, tags the release, publishes to npm and opens a GitHub release in the browser. Commits follow Conventional Commits (`feat!:`, `chore:`, `test:`).
+`release-it` (`.release-it.yaml`) only runs from `main`. It runs `task lint test` first, bumps the version, refreshes and commits `npm-shrinkwrap.json`, tags the release, publishes to npm and opens a GitHub release in the browser. Commits follow Conventional Commits (`feat!:`, `chore:`, `test:`).
 
 ## Consumers
 
