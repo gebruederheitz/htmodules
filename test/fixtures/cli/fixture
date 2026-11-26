@@ -2,12 +2,12 @@
 
 Header set "access-control-allowed-origin" "*"
 
-# BEGIN replaceme
+# BEGIN htmodules:replaceme
 
 I have nothing that binds me to this binary realm anymore...
 
 
-# END replaceme
+# END htmodules:replaceme
 
 
 # BEGIN unrelated
@@ -22,8 +22,8 @@ RewriteRule . / [N,R]
 
 "Some content in between"
 
-# BEGIN removal
+# BEGIN htmodules:removal
 
 I won't be here forever.
 
-# END removal
+# END htmodules:removal

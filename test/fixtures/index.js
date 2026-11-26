@@ -2,12 +2,12 @@ export const base = `# This is a test fixture mimicing an Apache .htaccess confi
 
 Header set "access-control-allowed-origin" "*"
 
-# BEGIN replaceme
+# BEGIN htmodules:replaceme
 
 This content should be replaced
 
 
-# END replaceme
+# END htmodules:replaceme
 
 
 # BEGIN unrelated

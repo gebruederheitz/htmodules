@@ -22,7 +22,7 @@ describe('The htmodules CLI script', () => {
     it('processes module files into a common template file', async () => {
         await cp(p('fixtures/cli/fixture'), filePath);
 
-        await execa(p('../bin/cli'), [], {
+        const { stdout } = await execa(p('../bin/cli'), [], {
             cwd: p('fixtures/cli'),
         });
 
@@ -32,14 +32,15 @@ describe('The htmodules CLI script', () => {
         expect(fileContent).to.contain('"Some content in between"');
         expect(fileContent).to.contain('# This bit should remain untouched');
         expect(fileContent).not.to.contain('binary realm');
-        expect(fileContent).not.to.contain('# BEGIN removal');
+        expect(fileContent).not.to.contain('# BEGIN htmodules:removal');
+        expect(stdout).to.contain('Removed block "htmodules:removal"');
         expect(fileContent).not.to.contain('be here forever');
     });
 
     it('works on custom files and directories', async () => {
         await cp(p('fixtures/cli/fixture'), nestedFilePath);
 
-        await execa(p('../bin/cli'), [nestedFilePath], {
+        const { stdout } = await execa(p('../bin/cli'), [nestedFilePath], {
             cwd: p('.'),
         });
 
@@ -49,7 +50,8 @@ describe('The htmodules CLI script', () => {
         expect(fileContent).to.contain('"Some content in between"');
         expect(fileContent).to.contain('# This bit should remain untouched');
         expect(fileContent).not.to.contain('binary realm');
-        expect(fileContent).not.to.contain('# BEGIN removal');
+        expect(fileContent).not.to.contain('# BEGIN htmodules:removal');
+        expect(stdout).to.contain('Removed block "htmodules:removal"');
         expect(fileContent).not.to.contain('be here forever');
     });
 
