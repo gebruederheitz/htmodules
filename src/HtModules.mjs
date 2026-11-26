@@ -6,13 +6,16 @@ import process from 'node:process';
 import { findNearestFile } from './find-nearest-file.mjs';
 
 /**
- * The prefix of every block htmodules writes: `# BEGIN htmodules:<name>`.
- * Blocks without it are never changed or removed.
+ * The default prefix of the blocks htmodules writes:
+ * `# BEGIN htmodules:<name>`. Blocks without the prefix are never changed or
+ * removed.
  */
 export const OWNER = 'htmodules';
 
 /**
  * @typedef {object} HtModulesOptions
+ * @property {string} [owner] The block name prefix, default `htmodules`:
+ *           `# BEGIN <owner>:<name>`. No whitespace and no `:`.
  * @property {boolean} [force] Remove all htmodules blocks even if there is
  *           no module file at all. Without it, such a run is rejected.
  */
@@ -23,8 +26,9 @@ export class HtModules {
      *        the nearest `.htaccess` from the working directory upwards.
      * @param {HtModulesOptions} options
      */
-    constructor(baseFilePath = '', { force = false } = {}) {
+    constructor(baseFilePath = '', { owner = OWNER, force = false } = {}) {
         this.baseFilePath = baseFilePath;
+        this.owner = owner;
         this.force = force;
     }
 
@@ -86,14 +90,14 @@ export class HtModules {
     async buildHtaccess(modules) {
         const ptl = new PlainTextLego(this.baseFilePath);
         return await ptl.run(modules, null, {
-            owner: OWNER,
+            owner: this.owner,
             force: this.force,
         });
     }
 
     logRemoved(name) {
         console.log(
-            `Removed block "${OWNER}:${name}" from ${this.baseFilePath}: there is no ${name}.htaccess next to it.`
+            `Removed block "${this.owner}:${name}" from ${this.baseFilePath}: there is no ${name}.htaccess next to it.`
         );
     }
 }

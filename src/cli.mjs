@@ -1,13 +1,14 @@
 import process from 'node:process';
 import { parseArgs } from 'node:util';
 
-import { HtModules } from './HtModules.mjs';
+import { HtModules, OWNER } from './HtModules.mjs';
 
-export const USAGE = 'Usage: htmodules [--force] [--] [base file]';
+export const USAGE =
+    'Usage: htmodules [--owner <name>] [--force] [--] [base file]';
 
 /**
  * @param {string[]} args The command line arguments, without node and the script.
- * @returns {{baseFilePath: string, options: {force: boolean}}}
+ * @returns {{baseFilePath: string, options: {owner: string, force: boolean}}}
  */
 export function parseCliArgs(args) {
     let parsed;
@@ -17,6 +18,7 @@ export function parseCliArgs(args) {
             strict: true,
             allowPositionals: true,
             options: {
+                owner: { type: 'string', default: OWNER },
                 force: { type: 'boolean', default: false },
             },
         });
@@ -33,7 +35,7 @@ export function parseCliArgs(args) {
 
     return {
         baseFilePath: positionals[0] ?? '',
-        options: { force: values.force },
+        options: { owner: values.owner, force: values.force },
     };
 }
 
@@ -56,7 +58,7 @@ export async function main(args = process.argv.slice(2)) {
         }
         if (error.code === 'PTL_NO_MODULES') {
             console.error(
-                'No module files found. Run with --force to remove all htmodules blocks.'
+                'No module files found. Run with --force to remove them all.'
             );
         }
         return 1;

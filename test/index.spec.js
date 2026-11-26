@@ -110,6 +110,33 @@ describe('The htmodules library', () => {
         expect(fs.readFileSync(filePath, 'utf8')).toBe('top\n');
     });
 
+    it('leaves the blocks of another owner alone', async () => {
+        vi.spyOn(console, 'log').mockImplementation(() => {});
+        const cwd = process.cwd();
+        const filePath = path.join(cwd, '.htaccess');
+        vol.fromJSON(
+            { './.htaccess': 'top\n', './one.htaccess': 'first set\n' },
+            cwd
+        );
+        await new HtModules('', { owner: 'deploy' }).run();
+
+        // A second, independent set of module files, applied with its own owner.
+        vol.unlinkSync(path.join(cwd, 'one.htaccess'));
+        vol.writeFileSync(path.join(cwd, 'two.htaccess'), 'second set\n');
+        expect(await new HtModules('', { owner: 'host' }).run()).toEqual([]);
+
+        // The first set again: its owner's block stays, the other one too.
+        vol.unlinkSync(path.join(cwd, 'two.htaccess'));
+        vol.writeFileSync(path.join(cwd, 'one.htaccess'), 'first set, v2\n');
+        expect(await new HtModules('', { owner: 'deploy' }).run()).toEqual([]);
+
+        expect(fs.readFileSync(filePath, 'utf8')).toBe(
+            'top\n\n' +
+                '# BEGIN deploy:one\nfirst set, v2\n# END deploy:one\n\n' +
+                '# BEGIN host:two\nsecond set\n# END host:two\n'
+        );
+    });
+
     it('rejects when there is no base file', async () => {
         await expect(new HtModules().run()).rejects.toMatchObject({
             code: 'HTMODULES_NO_BASE_FILE',
@@ -175,6 +202,41 @@ describe('The htmodules CLI', () => {
         expect(stderr).toHaveBeenCalledTimes(1);
         expect(stderr).toHaveBeenCalledWith(
             expect.stringMatching(/^htmodules: No \.htaccess found in /)
+        );
+    });
+
+    it('writes the blocks with the owner given by --owner', async () => {
+        const filePath = path.join(process.cwd(), '.htaccess');
+        vol.fromJSON(
+            { './.htaccess': '', './thing.htaccess': 'owned\n' },
+            process.cwd()
+        );
+
+        expect(await main(['--owner', 'site'])).toBe(0);
+        expect(fs.readFileSync(filePath, 'utf8')).toBe(
+            '# BEGIN site:thing\nowned\n# END site:thing\n'
+        );
+    });
+
+    it.each([[['--owner=']], [['--owner=a b']], [['--owner=a:b']]])(
+        'rejects the invalid owner in %j',
+        async (args) => {
+            vol.fromJSON(
+                { './.htaccess': '', './thing.htaccess': 'owned\n' },
+                process.cwd()
+            );
+
+            expect(await main(args)).toBe(1);
+            expect(stderr).toHaveBeenCalledWith(
+                expect.stringMatching(/^htmodules: Invalid owner /)
+            );
+        }
+    );
+
+    it('rejects --owner without a value with usage', async () => {
+        expect(await main(['--owner'])).toBe(1);
+        expect(stderr).toHaveBeenCalledWith(
+            expect.stringMatching(/^Usage: htmodules/)
         );
     });
 
